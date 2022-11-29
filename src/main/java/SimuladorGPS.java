@@ -125,7 +125,7 @@ public class SimuladorGPS implements Runnable{
 
     //Funcion encargada de generar body de la peticion HTTP
     private String dataToStringJson() {
-        String json = "{" +
+        return "{" +
                 "\"loginCode\":\"" + loginCode + "\"," +
                 "\"reportDate\":\"" + reportDate + "\"," +
                 "\"reportType\":\"" + reportType + "\"," +
@@ -139,7 +139,6 @@ public class SimuladorGPS implements Runnable{
                 "\"text\":\"" + text + "\"," +
                 "\"textLabel\":\"" + textLabel + "\"" +
                 "}";
-        return json;
     }
 
     //Metodo para enviar peticion con timestamps y hash actualizados, devuelve status HTTP
@@ -171,7 +170,7 @@ public class SimuladorGPS implements Runnable{
                 if (randomGeneration) { generateData(); }
                 int statusCode = sendUpdateData();
                 //Si el codigo de respuesta es 429 o mayor a 500 y no han transcurrido 10 minutos desde la generacion del reporte
-                while ((statusCode == 429 || statusCode >= 500) && unixTimestamp + 20 >= getUnixTimestamp()) {
+                while ((statusCode == 429 || statusCode >= 500) && unixTimestamp + (timeOut * 60L) >= getUnixTimestamp()) {
                     System.out.println("Envio fallido, reintentando...\n" + EntityUtils.toString(response.getEntity()));
                     Thread.sleep(10000);
                     statusCode = sendLastData();
@@ -182,15 +181,13 @@ public class SimuladorGPS implements Runnable{
                             "\nResponse: " + EntityUtils.toString(response.getEntity()));
                 }
                 if (infiniteLoop) {
-                    System.out.println("\n Se enviará proximo reporte en " + interval + " segundos...");
-                    Thread.sleep(interval * 1000);
+                    System.out.println("\n Se enviara proximo reporte en " + interval + " segundos...");
+                    Thread.sleep(interval * 1000L);
                 }
             } while(infiniteLoop);
 
         } catch (InterruptedException | IOException e) {
             System.out.println(e);
-        } catch (Exception ex) {
-            System.out.println(ex);
         }
     }
 }
